@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import DemoTour from '@/components/DemoTour';
-import { ShoppingBag, Search, Sparkles, CheckCircle2, ShieldCheck, ArrowRight, Zap, RefreshCw, Lock, AlertTriangle, ChevronRight, Play } from 'lucide-react';
+import { ShoppingBag, Search, Sparkles, CheckCircle2, ShieldCheck, ArrowRight, Zap, RefreshCw, Lock, AlertTriangle, AlertCircle, ChevronRight, Play } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AIBuyerPage() {
@@ -432,27 +432,83 @@ export default function AIBuyerPage() {
             </div>
           )}
 
-          {/* STEP 5: VERIFIED RESULT */}
+          {/* STEP 5: VERIFIED RESULT & DIAGNOSTIC PANEL */}
           {step === 'RESULT' && paymentResult && (
-            <div className="max-w-xl mx-auto w-full p-6 rounded-2xl bg-[#12141c] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto glow-emerald">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
+            <div className="max-w-xl mx-auto w-full p-6 rounded-2xl bg-[#12141c] border border-[#1f2433] text-center space-y-6 shadow-2xl">
+              {paymentResult.verified && paymentResult.success ? (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto glow-emerald">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
 
-              <div className="space-y-1">
-                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/30">
-                  Payment Verified Server-Side
-                </span>
-                <h2 className="text-2xl font-black text-white pt-2">₹{paymentResult.amount.toLocaleString()} Paid</h2>
-                <p className="text-xs text-gray-400">Razorpay HMAC signature verified cleanly in SQLite DB.</p>
-              </div>
+                  <div className="space-y-2">
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/30">
+                      HMAC SHA-256 Verified Server-Side
+                    </span>
+                    <h2 className="text-2xl font-black text-white pt-1">
+                      ₹{paymentResult.amount?.toLocaleString() || '4,498'} Paid
+                    </h2>
+                    <p className="text-xs text-gray-400">
+                      Razorpay Test Payment verified cryptographically & persisted to DB.
+                    </p>
+                  </div>
+
+                  {/* Diagnostic Pipeline Visualizer */}
+                  <div className="p-4 rounded-xl bg-[#181b26] border border-[#2a3044] space-y-2 text-left text-xs font-mono">
+                    <div className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">
+                      Execution Diagnostic Timeline
+                    </div>
+                    <div className="space-y-1 text-gray-300 text-[11px]">
+                      <div className="flex justify-between">
+                        <span>1. Order Created:</span>
+                        <span className="text-emerald-400 font-bold">{paymentResult.orderId || 'PASSED'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>2. Razorpay Checkout:</span>
+                        <span className="text-emerald-400 font-bold">COMPLETED</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>3. Payment Response ID:</span>
+                        <span className="text-emerald-400 font-bold">{paymentResult.paymentId || 'pay_test_...'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>4. HMAC Verification:</span>
+                        <span className="text-emerald-400 font-bold">SHA-256 MATCH</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>5. Database Status:</span>
+                        <span className="text-emerald-400 font-bold">PAID (Audit Persisted)</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 mx-auto">
+                    <AlertCircle className="w-8 h-8" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-400 text-xs font-mono border border-rose-500/30">
+                      {paymentResult.reason?.includes('Signature') ? 'PAYMENT VERIFICATION FAILED' : 'PAYMENT FAILED'}
+                    </span>
+                    <h2 className="text-xl font-bold text-white pt-1">
+                      {paymentResult.error || 'Payment Verification Failed'}
+                    </h2>
+                    <p className="text-xs text-rose-300">
+                      {paymentResult.reason || 'Cryptographic signature verification failed or payment was rejected. ₹0 charged.'}
+                    </p>
+                  </div>
+                </>
+              )}
 
               <button
                 onClick={() => {
                   setStep('SEARCH');
                   setSession(null);
+                  setPaymentResult(null);
                 }}
-                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs"
+                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all"
               >
                 Test Another AI Buyer Search
               </button>
