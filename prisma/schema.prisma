@@ -1,0 +1,208 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Merchant {
+  id                    String              @id @default(uuid())
+  name                  String
+  slug                  String              @unique
+  category              String
+  currency              String              @default("INR")
+  logoUrl               String?
+  readinessScore        Int                 @default(92)
+  catalogCompleteness   Int                 @default(96)
+  structuredPricing     Int                 @default(100)
+  productRelationships  Int                 @default(89)
+  policyClarity         Int                 @default(94)
+  checkoutReadiness     Int                 @default(91)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  products              Product[]
+  customers             Customer[]
+  orders                Order[]
+  campaigns             Campaign[]
+  policies              Policy[]
+  auditEvents           AuditEvent[]
+  authorizations        AuthorizationRecord[]
+  aiProfile             AICommerceProfile?
+}
+
+model Product {
+  id                  String               @id @default(uuid())
+  merchantId          String
+  title               String
+  slug                String
+  category            String
+  price               Float
+  costPrice           Float?
+  stock               Int                  @default(100)
+  description         String
+  attributesJson      String               // JSON string of structured specs
+  imageUrl            String?
+  isAiDiscoverable    Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  merchant            Merchant             @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  sourceRelations     ProductRelationship[] @relation("SourceProduct")
+  targetRelations     ProductRelationship[] @relation("TargetProduct")
+}
+
+model Customer {
+  id            String     @id @default(uuid())
+  merchantId    String
+  name          String
+  email         String
+  phone         String?
+  spendingTier  String     @default("REGULAR")
+  totalSpent    Float      @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  merchant      Merchant   @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  orders        Order[]
+  authorizations AuthorizationRecord[]
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  razorpayOrderId   String?     @unique
+  merchantId        String
+  customerId        String?
+  totalAmount       Float
+  currency          String      @default("INR")
+  status            String      @default("PENDING") // PENDING, PAID, PAYMENT_FAILED, CANCELLED
+  paymentStatus     String      @default("UNPAID")  // UNPAID, AUTHORIZED, CAPTURED, FAILED
+  actionId          String      @unique             // Idempotency key (RAY-ACT-...)
+  cartItemsJson     String      // JSON string of cart contents
+  failureReason     String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  merchant          Merchant    @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  customer          Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  payments          Payment[]
+  auditEvents       AuditEvent[]
+}
+
+model Payment {
+  id                 String   @id @default(uuid())
+  orderId            String
+  razorpayPaymentId  String?  @unique
+  razorpaySignature  String?
+  amount             Float
+  currency           String   @default("INR")
+  status             String   // INITIATED, SUCCESS, FAILED
+  failureReason      String?
+  method             String?  // card, upi, netbanking
+  rawPayloadJson     String?  // Full response log
+  createdAt          DateTime @default(now())
+
+  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model AuthorizationRecord {
+  id                 String   @id @default(uuid())
+  actionId           String   @unique
+  merchantId         String
+  customerId         String?
+  authorizedAmount   Float
+  currency           String   @default("INR")
+  cartHash           String   // SHA-256 hash of items & prices to detect cart tampering
+  cartItemsJson      String
+  status             String   @default("ACTIVE") // ACTIVE, USED, EXPIRED, INVALIDATED
+  userConfirmedAt    DateTime @default(now())
+  expiresAt          DateTime
+
+  merchant           Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  customer           Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+}
+
+model ProductRelationship {
+  id                 String   @id @default(uuid())
+  sourceProductId    String
+  targetProductId    String
+  relationType       String   // UPSELL, CROSS_SELL
+  confidence         Float    // e.g. 0.87
+  simulatedAovUplift Float    // e.g. 349.0
+  rationale          String
+  status             String   @default("ACTIVE") // ACTIVE, DRAFT, REJECTED
+  createdAt          DateTime @default(now())
+
+  sourceProduct      Product  @relation("SourceProduct", fields: [sourceProductId], references: [id], onDelete: Cascade)
+  targetProduct      Product  @relation("TargetProduct", fields: [targetProductId], references: [id], onDelete: Cascade)
+}
+
+model Campaign {
+  id                     String   @id @default(uuid())
+  merchantId             String
+  title                  String
+  offerDiscountPercent   Float
+  targetAudience         String
+  durationHours          Int
+  expectedRevenueImpact  Float
+  status                 String   @default("DRAFT") // DRAFT, ACTIVE, APPROVED, COMPLETED
+  approvedAt             DateTime?
+  createdAt              DateTime @default(now())
+
+  merchant               Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+}
+
+model Policy {
+  id                     String   @id @default(uuid())
+  merchantId             String
+  maxTransactionLimit    Float    @default(5000.0)
+  maxDailySpend          Float    @default(20000.0)
+  maxCartAmount          Float    @default(10000.0)
+  requireUserConfirmation Boolean  @default(true)
+  allowedCategoriesJson  String   // JSON string array e.g. ["Electronics", "Sports & Fitness", "Accessories"]
+  blockedCategoriesJson  String   // JSON string array e.g. ["Gift Cards", "Subscriptions"]
+  isEnabled              Boolean  @default(true)
+  updatedAt              DateTime @updatedAt
+
+  merchant               Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+}
+
+model AuditEvent {
+  id          String   @id @default(uuid())
+  actionId    String   // RAY-ACT-...
+  orderId     String?
+  merchantId  String
+  timestamp   DateTime @default(now())
+  actor       String   // AI_BUYER, RAY_GROWTH_AGENT, MERCHANT, SYSTEM
+  action      String   // INTENT_PARSED, POLICY_CHECKED, POLICY_BLOCKED, USER_AUTHORIZED, AUTHORIZATION_INVALIDATED, ORDER_CREATED, PAYMENT_SUCCESS, PAYMENT_FAILED
+  amount      Float?
+  status      String   // SUCCESS, BLOCKED, FAILED, PENDING
+  reason      String?
+  metadataJson String? // JSON metadata
+
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  order       Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+}
+
+model AgentSession {
+  id             String   @id @default(uuid())
+  sessionId      String   @unique
+  actionId       String?
+  intentText     String?
+  toolsCalledJson String? // JSON array of tools executed
+  latencyMs      Int?
+  tokensUsed     Int?
+  status         String   @default("SUCCESS")
+  createdAt      DateTime @default(now())
+}
+
+model AICommerceProfile {
+  id             String   @id @default(uuid())
+  merchantId     String   @unique
+  rawPassportJson String   // Full machine-readable passport
+  updatedAt      DateTime @updatedAt
+
+  merchant       Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+}
