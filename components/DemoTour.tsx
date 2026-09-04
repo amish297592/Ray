@@ -36,11 +36,11 @@ const DEMO_STEPS: DemoStep[] = [
   },
   {
     stepNumber: 3,
-    title: 'AI Buyer Discovery & Intent Parsing',
+    title: 'AI Buyer Discovery & Unconstrained Search',
     route: '/buyer',
     duration: '35s',
-    narration: 'An AI Buyer shops with Nova Run: "Find me the best running setup under ₹5,000." RAY parses intent, searches SQLite catalog candidates, and optimizes basket to ₹4,498.',
-    highlightText: 'Basket: Nova Runner X1 Pro (₹3,999) + Anti-Blister Socks (₹499) = ₹4,498 (Remaining ₹502).',
+    narration: 'An AI Buyer searches Nova Run catalog based on natural intent. RAY parses intent, searches candidates without hardcoded caps, and optimizes a basket to ₹4,498.',
+    highlightText: 'Basket: Nova Runner X1 Pro (₹3,999) + Anti-Blister Socks (₹499) = ₹4,498.',
     actionText: 'Authorize Bounded Payment',
   },
   {
@@ -48,7 +48,7 @@ const DEMO_STEPS: DemoStep[] = [
     title: 'Bounded Transaction & Policy Gate',
     route: '/buyer',
     duration: '20s',
-    narration: 'The Policy Engine verifies ₹4,498 ≤ ₹5,000 cap -> POLICY PASSED. The AI CANNOT touch money directly; explicit user confirmation is required.',
+    narration: 'The Policy Engine evaluates ₹4,498 ≤ ₹5,000 cap -> POLICY PASSED. If a basket exceeds ₹5,000, Policy Engine blocks execution. The AI CANNOT touch money directly.',
     highlightText: 'Deterministic Guardrail: Policy Engine decision PASS. User checks authorization box.',
     actionText: 'Launch Razorpay Checkout',
   },

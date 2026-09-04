@@ -13,7 +13,7 @@ export interface OptimizedBasketItem {
 
 export interface OptimizedBasketResult {
   valid: boolean;
-  status: 'OPTIMIZED' | 'BUDGET_EXCEEDED' | 'NO_VALID_BASKET';
+  status: 'OPTIMIZED' | 'NO_VALID_BASKET';
   items: OptimizedBasketItem[];
   totalAmount: number;
   maxBudget: number;
@@ -28,12 +28,12 @@ export interface OptimizedBasketResult {
 
 /**
  * Deterministic Basket Optimization Algorithm
- * Maximizes relevance + complementary graph attach value subject to:
- * totalAmount <= maxBudget
+ * The AI Buyer searches the catalog freely based on intent and builds an optimized recommendation basket.
+ * Financial constraints (e.g. ₹5,000 single limit, ₹20,000 daily spend) are evaluated by the Policy Engine.
  */
 export async function optimizeBuyerBasket(
   rankedCandidates: RankedProduct[],
-  maxBudget: number,
+  maxBudget: number = Infinity,
   merchantSlug: string = 'nova-run'
 ): Promise<OptimizedBasketResult> {
   if (rankedCandidates.length === 0) {
@@ -42,26 +42,14 @@ export async function optimizeBuyerBasket(
       status: 'NO_VALID_BASKET',
       items: [],
       totalAmount: 0,
-      maxBudget,
-      remainingBudget: maxBudget,
-      recommendationExplanation: `No products available within budget of ₹${maxBudget.toLocaleString()}.`,
+      maxBudget: maxBudget === Infinity ? 0 : maxBudget,
+      remainingBudget: maxBudget === Infinity ? 0 : maxBudget,
+      recommendationExplanation: 'No matching products found in catalog for specified intent.',
     };
   }
 
-  // 1. Select Primary Hero Product (Highest relevance score within budget)
+  // 1. Select Primary Hero Product (Highest relevance score for intent)
   const hero = rankedCandidates[0];
-
-  if (hero.price > maxBudget) {
-    return {
-      valid: false,
-      status: 'BUDGET_EXCEEDED',
-      items: [],
-      totalAmount: 0,
-      maxBudget,
-      remainingBudget: maxBudget,
-      recommendationExplanation: `Hero product ${hero.title} (₹${hero.price.toLocaleString()}) exceeds stated budget limit of ₹${maxBudget.toLocaleString()}.`,
-    };
-  }
 
   const items: OptimizedBasketItem[] = [
     {
@@ -76,7 +64,8 @@ export async function optimizeBuyerBasket(
   ];
 
   let currentTotal = hero.price;
-  let remaining = maxBudget - currentTotal;
+  const isBudgetConstrained = maxBudget !== Infinity && maxBudget > 0;
+  let remaining = isBudgetConstrained ? maxBudget - currentTotal : Infinity;
 
   // 2. Query Database for Cross-Sell Graph Attachments for Hero Product
   const relationships = await prisma.productRelationship.findMany({
@@ -90,34 +79,36 @@ export async function optimizeBuyerBasket(
     orderBy: { confidence: 'desc' },
   });
 
-  let recommendationExplanation = `Selected ${hero.title} (₹${hero.price.toLocaleString()}) matching stated intent.`;
+  let recommendationExplanation = `Selected ${hero.title} (₹${hero.price.toLocaleString()}) matching buyer intent.`;
 
-  // 3. Evaluate Complementary Attachments within Remaining Budget
+  // 3. Evaluate Complementary Attachments from Graph
   for (const rel of relationships) {
     const target = rel.targetProduct;
-    if (target.price <= remaining) {
+    const isWithinBudget = !isBudgetConstrained || target.price <= remaining;
+
+    if (isWithinBudget || relationships.length === 1) {
       items.push({
         id: target.id,
         title: target.title,
         price: target.price,
         category: target.category,
         imageUrl: target.imageUrl,
-        rationale: `AI Recommended Addition: ${rel.rationale} (+₹${target.price})`,
+        rationale: `AI Cross-Sell Recommendation: ${rel.rationale} (+₹${target.price.toLocaleString()})`,
         isRecommendation: true,
       });
 
       currentTotal += target.price;
-      remaining -= target.price;
-      recommendationExplanation += ` Added ${target.title} (+₹${target.price.toLocaleString()}) within remaining budget ₹${(remaining + target.price).toLocaleString()}.`;
+      if (isBudgetConstrained) {
+        remaining -= target.price;
+      }
+      recommendationExplanation += ` Added ${target.title} (+₹${target.price.toLocaleString()}) based on high co-occurrence confidence (${Math.round(rel.confidence * 100)}%).`;
       break; // Single optimized complementary recommendation for clean basket
     }
   }
 
   // 4. Check for Upsell Upgrade Candidate
   let suggestedUpsell;
-  const higherTierCandidate = rankedCandidates.find(
-    (p) => p.price > hero.price && p.price <= maxBudget
-  );
+  const higherTierCandidate = rankedCandidates.find((p) => p.price > hero.price);
 
   if (higherTierCandidate) {
     suggestedUpsell = {
@@ -128,28 +119,15 @@ export async function optimizeBuyerBasket(
   }
 
   currentTotal = Number(currentTotal.toFixed(2));
-  remaining = Number(remaining.toFixed(2));
-
-  // Hard Budget Enforcement Verification
-  if (currentTotal > maxBudget) {
-    return {
-      valid: false,
-      status: 'BUDGET_EXCEEDED',
-      items: [],
-      totalAmount: currentTotal,
-      maxBudget,
-      remainingBudget: maxBudget - currentTotal,
-      recommendationExplanation: `Hard Budget Violation: Calculated total ₹${currentTotal} exceeds max budget ₹${maxBudget}. Basket rejected.`,
-    };
-  }
+  const displayRemaining = isBudgetConstrained ? Number(remaining.toFixed(2)) : 0;
 
   return {
     valid: true,
     status: 'OPTIMIZED',
     items,
     totalAmount: currentTotal,
-    maxBudget,
-    remainingBudget: remaining,
+    maxBudget: isBudgetConstrained ? maxBudget : currentTotal,
+    remainingBudget: displayRemaining,
     recommendationExplanation,
     suggestedUpsell,
   };

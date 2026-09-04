@@ -47,7 +47,7 @@ flowchart TD
    - *Engine 01 (Upsell)*: Recommends higher-tier performance models.
    - *Engine 02 (Cross-Sell Graph)*: Recommends complementary attachments based on historical purchase co-occurrence.
    - *Engine 03 (Campaign Orchestrator)*: Modeled deterministic campaign revenue impact formula.
-3. **AI Buyer Console (`/buyer`)**: Natural-language intent search ("running shoes under ₹5,000"), candidate search, basket optimization (₹4,498 total), explicit user authorization modal, and Razorpay checkout launch.
+3. **AI Buyer Console (`/buyer`)**: Natural-language intent search ("Find me the best running setup"), candidate search, basket optimization (₹4,498 total), explicit user authorization modal, and Razorpay checkout launch. The AI Buyer searches unconstrained by price caps; financial execution limits (₹5,000 single cap, ₹20,000 daily spend) are deterministically enforced by the Policy Engine.
 4. **AI Commerce Passport (`/passport`)**: Machine-readable merchant discovery contract exposed versioned at `GET /api/agent/merchant/nova-run` with Zod schema validation and a Live Machine JSON Inspector.
 5. **Transaction Safety (`/resilience`)**: Explicit 11-stage Transaction State Machine, 100/100 Safety Score, idempotency protection, and guided failure simulations.
 
@@ -56,10 +56,10 @@ flowchart TD
 ## ⚡ Guided 3-Minute Judge Demo Sequence
 
 | Step | Time | Hub | Action & Highlight |
-| shadow |---|---|---|
+|---|---|---|---|
 | **Step 1** | 20s | Command Center | Executive revenue overview & 92/100 AI Commerce Readiness score. |
 | **Step 2** | 25s | Revenue Agent | Cross-sell graph: Nova Runner X1 Pro $\rightarrow$ Anti-Blister Socks (42% attach rate). |
-| **Step 3** | 35s | AI Buyer | Query: *"Find me running setup under ₹5,000"*. Basket optimized to ₹4,498. |
+| **Step 3** | 35s | AI Buyer | Query: *"Find me the best running setup"*. Basket optimized to ₹4,498. |
 | **Step 4** | 20s | Policy Gate | Policy Engine verifies ₹4,498 $\le$ ₹5,000 cap $\rightarrow$ PASS. Explicit user consent modal. |
 | **Step 5** | 30s | Razorpay Checkout | Launch official Razorpay Test Checkout modal. HMAC SHA-256 signature verified server-side. |
 | **Step 6** | 20s | Failure Simulation | Rapid double click simulation: Idempotency returns original transaction with ₹0 duplicate charge. |
