@@ -40,14 +40,14 @@ export default function Sidebar({ onStartDemo }: SidebarProps) {
           </div>
         </Link>
 
-        {/* Guided 3-Min Demo Action Button */}
-        <button
-          onClick={onStartDemo}
+        {/* Quick Action Button */}
+        <Link
+          href="/buyer"
           className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-600/25 flex items-center justify-center space-x-2 transition-all hover:scale-[1.02]"
         >
-          <Play className="w-4 h-4 fill-current text-white" />
-          <span>Launch 3-Min Demo</span>
-        </button>
+          <ShoppingBag className="w-4 h-4 text-white" />
+          <span>Launch AI Buyer</span>
+        </Link>
 
         {/* Navigation Items */}
         <nav className="space-y-1 pt-2">

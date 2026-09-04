@@ -23,14 +23,9 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowDemoTour(true)}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 flex items-center space-x-2 transition-all"
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Launch 3-Min Demo</span>
-            </button>
+          <div className="flex items-center space-x-3 text-xs font-mono">
+            <span className="text-gray-400">Merchant: <strong className="text-white">Nova Run</strong></span>
+            <span className="text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/30">● Test Mode</span>
           </div>
         </header>
 

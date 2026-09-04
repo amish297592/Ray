@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Sidebar from '@/components/Sidebar';
-import DemoTour from '@/components/DemoTour';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -11,7 +10,6 @@ import {
   Zap,
   ShoppingBag,
   FileCode,
-  Play,
   CheckCircle2,
   Lock,
   ChevronRight,
@@ -20,14 +18,9 @@ import {
   XCircle,
   Activity,
   FileText,
-  DollarSign,
-  AlertTriangle,
-  RefreshCw,
 } from 'lucide-react';
 
 export default function LandingPage() {
-  const [showDemoTour, setShowDemoTour] = useState(false);
-
   // Framer Motion Animation Variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -45,7 +38,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#090a0f] text-gray-100 flex font-sans">
       {/* Sidebar */}
-      <Sidebar onStartDemo={() => setShowDemoTour(true)} />
+      <Sidebar />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
@@ -57,14 +50,9 @@ export default function LandingPage() {
             <span className="text-white">AI Revenue & Commerce Operating System</span>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowDemoTour(true)}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 flex items-center space-x-2 transition-all hover:scale-105"
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Launch 3-Min Demo</span>
-            </button>
+          <div className="flex items-center space-x-3 text-xs font-mono">
+            <span className="text-gray-400">Merchant: <strong className="text-white">Nova Run</strong></span>
+            <span className="text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/30">● Test Mode</span>
           </div>
         </header>
 
@@ -79,7 +67,7 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-mono">
               <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-              <span>RAZORPAY AI BUILDATHON FINALIST</span>
+              <span>RAZORPAY AI BUILDATHON</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
@@ -90,8 +78,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-sm sm:text-base text-gray-400 max-w-3xl mx-auto leading-relaxed">
-              RAY connects AI-powered commerce intelligence with bounded, auditable Razorpay payments.
-              The AI recommends freely, the Policy Engine controls limits, users explicitly authorize, and Razorpay executes.
+              RAY connects merchant revenue intelligence, AI buyer discovery, machine-readable commerce, and bounded Razorpay payments under deterministic financial guardrails.
             </p>
 
             <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
@@ -110,14 +97,6 @@ export default function LandingPage() {
                 <ShoppingBag className="w-4 h-4 text-blue-400" />
                 <span>Open AI Buyer Console</span>
               </Link>
-
-              <button
-                onClick={() => setShowDemoTour(true)}
-                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-xl shadow-emerald-600/30 flex items-center space-x-2 transition-all hover:scale-105"
-              >
-                <Play className="w-4 h-4 fill-current" />
-                <span>Launch 3-Min Pitch Demo</span>
-              </button>
             </div>
 
             {/* Interactive Animated Pipeline Map */}
@@ -544,9 +523,6 @@ export default function LandingPage() {
           </motion.section>
         </main>
       </div>
-
-      {/* Guided Pitch Demo Overlay */}
-      {showDemoTour && <DemoTour onClose={() => setShowDemoTour(false)} />}
     </div>
   );
 }

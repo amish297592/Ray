@@ -66,13 +66,13 @@ export default function ResiliencePage() {
           </div>
 
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowDemoTour(true)}
+            <Link
+              href="/audit"
               className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 flex items-center space-x-2 transition-all"
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Launch 3-Min Demo</span>
-            </button>
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>System Audit Console</span>
+            </Link>
           </div>
         </header>
 
