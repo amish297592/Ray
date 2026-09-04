@@ -73,7 +73,7 @@ export async function runBuyerSession(
   auditTrail.push(`Found ${candidates.length} candidate products in catalog within budget`);
 
   // 4. Basket Optimization Algorithm
-  const basket = await optimizeBuyerBasket(candidates, intent.maxBudget, slug);
+  const basket = await optimizeBuyerBasket(candidates, intent.maxBudget, slug, intent);
   await recordAuditEvent({
     actionId,
     merchantSlug: slug,

@@ -465,7 +465,7 @@ async function main() {
 
   // Seed Audit Events
   const events = [
-    { actor: 'AI_BUYER', action: 'INTENT_PARSED', amount: null, status: 'SUCCESS', reason: 'Parsed: Running shoes under ₹5,000' },
+    { actor: 'AI_BUYER', action: 'INTENT_PARSED', amount: null, status: 'SUCCESS', reason: 'Parsed: Find me the best running setup' },
     { actor: 'RAY_GROWTH_AGENT', action: 'CATALOG_SEARCHED', amount: null, status: 'SUCCESS', reason: 'Found 4 matching products in Sports & Fitness' },
     { actor: 'RAY_GROWTH_AGENT', action: 'UPSELL_RECOMMENDED', amount: 499.0, status: 'SUCCESS', reason: 'Recommended Performance Socks pairing (+12.5% AOV uplift)' },
     { actor: 'SYSTEM', action: 'POLICY_CHECK_PASSED', amount: 4498.0, status: 'SUCCESS', reason: 'Cart total ₹4,498 is within max limit ₹5,000' },

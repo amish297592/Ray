@@ -84,7 +84,7 @@ describe('Phase 5 — AI Buyer & Agentic Commerce Engine', () => {
   describe('Policy Engine Single Transaction Cap (Below ₹5,000)', () => {
     it('should ELIGIBILITY PASS for basket under ₹5,000 and require explicit authorization', async () => {
       const session = await runBuyerSession({
-        rawQuery: 'Find trail running shoes and socks under ₹5,000.',
+        rawQuery: 'Find trail running shoes and matching socks.',
         merchantSlug: 'nova-run',
         userConfirmed: false,
       });
@@ -97,7 +97,7 @@ describe('Phase 5 — AI Buyer & Agentic Commerce Engine', () => {
 
     it('should PASS Policy Engine when explicit user authorization is granted', async () => {
       const session = await runBuyerSession({
-        rawQuery: 'Find trail running shoes and socks under ₹5,000.',
+        rawQuery: 'Find trail running shoes and matching socks.',
         merchantSlug: 'nova-run',
         userConfirmed: true,
       });
