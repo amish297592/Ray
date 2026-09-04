@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Zap, ShoppingBag, ShieldCheck, FileCode, Play, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, Zap, ShoppingBag, ShieldCheck, FileCode, Play, AlertTriangle, FileText } from 'lucide-react';
 
 interface SidebarProps {
   onStartDemo?: () => void;
@@ -18,6 +18,7 @@ export default function Sidebar({ onStartDemo }: SidebarProps) {
     { label: 'AI Buyer Console', href: '/buyer', icon: ShoppingBag },
     { label: 'Commerce Passport', href: '/passport', icon: FileCode },
     { label: 'Transaction Safety', href: '/resilience', icon: ShieldCheck },
+    { label: 'System Audit Console', href: '/audit', icon: FileText },
   ];
 
   return (
