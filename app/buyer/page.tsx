@@ -7,9 +7,11 @@ import { ShoppingBag, Search, Sparkles, CheckCircle2, ShieldCheck, ArrowRight, Z
 import Link from 'next/link';
 
 export default function AIBuyerPage() {
-  const [query, setQuery] = useState('Find me the best running setup.');
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStateText, setLoadingStateText] = useState<string>('Analyzing request...');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [uiState, setUiState] = useState<'IDLE' | 'ANALYZING' | 'SEARCHING' | 'OPTIMIZING' | 'POLICY' | 'READY' | 'BLOCKED' | 'AI_FAILURE' | 'FALLBACK' | 'NO_RESULTS'>('IDLE');
   const [session, setSession] = useState<any>(null);
   const [userConfirmed, setUserConfirmed] = useState(false);
   const [orderData, setOrderData] = useState<any>(null);
@@ -21,21 +23,33 @@ export default function AIBuyerPage() {
   const [simulateFailureType, setSimulateFailureType] = useState<string>('NONE');
 
   const presetQueries = [
-    'Find me the best running setup.',
-    'Build me a premium marathon kit.',
-    'Find trail running shoes and matching socks.',
-    'Buy Apex GPS Smartwatch and Trail Blazer GTX.',
+    'Find me the best running shoes.',
+    "I've started marathon training. Build me a premium setup.",
+    'Find trail running shoes and socks under ₹1500.',
+    'Recommend accessories for my running shoes.',
     'Build the best setup regardless of price.',
   ];
 
   // Run AI Buyer Session
   const handleRunBuyer = async (customQuery?: string) => {
-    const activeQuery = customQuery || query;
+    const rawActive = customQuery !== undefined ? customQuery : query;
+    const activeQuery = rawActive.trim().length > 0 ? rawActive.trim() : 'Find me the best running shoes.';
+    
+    // If input was empty, set visual text to default query
+    if (!query.trim()) {
+      setQuery('Find me the best running shoes.');
+    }
+
     setLoading(true);
-    setLoadingStateText('Searching merchant catalog & optimizing basket...');
+    setErrorMessage(null);
+    setUiState('ANALYZING');
+    setLoadingStateText('Understanding your request...');
     setPaymentResult(null);
 
     try {
+      setLoadingStateText('Searching Nova Run catalog & optimizing basket...');
+      setUiState('SEARCHING');
+
       const res = await fetch('/api/buyer/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,11 +64,21 @@ export default function AIBuyerPage() {
       if (data.success) {
         setSession(data);
         setStep('BASKET');
+        if (!data.basket || !data.basket.valid || data.basket.items.length === 0) {
+          setUiState('NO_RESULTS');
+        } else if (!data.policyDecision.allowed || data.policyDecision.decision === 'BLOCK') {
+          setUiState('BLOCKED');
+        } else {
+          setUiState(data.isFallback ? 'FALLBACK' : 'READY');
+        }
       } else {
-        alert(`AI Buyer Error: ${data.error || 'Failed to analyze intent'}`);
+        setUiState('AI_FAILURE');
+        setErrorMessage(data.error || 'RAY couldn\'t complete the AI analysis. Try again.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setUiState('AI_FAILURE');
+      setErrorMessage(err?.message || 'Failed to connect to RAY AI Buyer engine');
     } finally {
       setLoading(false);
     }
@@ -64,6 +88,7 @@ export default function AIBuyerPage() {
   const handleCreateOrder = async () => {
     if (!session || !session.basket) return;
     setLoading(true);
+    setErrorMessage(null);
     setLoadingStateText('Evaluating Policy Engine & creating Razorpay order...');
 
     const items = session.basket.items.map((i: any) => ({ productId: i.id, quantity: 1 }));
@@ -85,7 +110,7 @@ export default function AIBuyerPage() {
       const data = await res.json();
 
       if (!data.success) {
-        alert(`Policy Engine Rejection: ${data.reason || data.error}`);
+        setErrorMessage(`Policy Engine Rejection: ${data.reason || data.error}`);
         setLoading(false);
         return;
       }
@@ -93,7 +118,7 @@ export default function AIBuyerPage() {
       setOrderData(data);
       setStep('CHECKOUT');
     } catch (err: any) {
-      alert(`Order Failed: ${err?.message}`);
+      setErrorMessage(`Order Failed: ${err?.message}`);
     } finally {
       setLoading(false);
     }
@@ -210,6 +235,17 @@ export default function AIBuyerPage() {
 
         {/* Main Content */}
         <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 space-y-6">
+          {/* Header Banner */}
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-blue-400" />
+              AI BUYER
+            </h2>
+            <p className="text-xs text-gray-400">
+              Tell RAY what you want. We&apos;ll discover, recommend and optimize.
+            </p>
+          </div>
+
           {/* Search Bar & Preset Chips */}
           <div className="p-5 md:p-6 rounded-2xl bg-[#12141c] border border-[#1f2433] space-y-4 shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -229,8 +265,8 @@ export default function AIBuyerPage() {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="e.g. Build me a premium marathon kit or find trail running shoes..."
-                  className="w-full bg-[#181b26] border border-[#2a3044] rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-gray-600"
+                  placeholder="Ask RAY what you want to find..."
+                  className="w-full bg-[#181b26] border border-[#2a3044] rounded-xl pl-12 pr-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-gray-500 font-sans"
                 />
               </div>
               <button
@@ -252,9 +288,28 @@ export default function AIBuyerPage() {
               </button>
             </div>
 
+            {/* Error Banner */}
+            {errorMessage && (
+              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/40 text-xs text-rose-300 flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* Fallback Banner */}
+            {session?.isFallback && (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between text-xs text-amber-300 font-mono">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>AI provider unavailable — using local commerce intelligence.</span>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px]">LOCAL ENGINE</span>
+              </div>
+            )}
+
             {/* Preset Query Chips */}
             <div className="space-y-2 pt-1">
-              <span className="text-xs text-gray-500 font-mono">Preset AI Shopping Intents (Click to test):</span>
+              <span className="text-xs text-gray-400 font-medium">Try asking:</span>
               <div className="flex flex-wrap gap-2">
                 {presetQueries.map((pq, idx) => (
                   <button

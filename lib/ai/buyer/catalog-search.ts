@@ -49,6 +49,12 @@ export function searchBuyerCatalog(
         attrs = {};
       }
 
+      // Explicit Product Title Match Boost
+      if (intent.explicitProductName && prod.title.toLowerCase().includes(intent.explicitProductName.toLowerCase())) {
+        score += 0.4;
+        matchReasons.push(`Exact product match: "${prod.title}"`);
+      }
+
       // 1. Budget preference evaluation if specified
       if (intent.hasExplicitBudget && intent.maxBudget && intent.maxBudget !== Infinity) {
         if (prod.price <= intent.maxBudget) {
@@ -59,6 +65,12 @@ export function searchBuyerCatalog(
         }
       } else {
         matchReasons.push(`Catalog item price: ₹${prod.price.toLocaleString()}`);
+      }
+
+      // Quality match
+      if (intent.quality === 'premium' && prod.price > 3500) {
+        score += 0.15;
+        matchReasons.push(`Matches premium tier quality specification`);
       }
 
       // 2. Category / Terrain Match

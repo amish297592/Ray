@@ -17,6 +17,8 @@ export interface BuyerSessionResponse {
   sessionId: string;
   actionId: string;
   provider: 'OPENAI' | 'GEMINI' | 'DETERMINISTIC_BUYER_ENGINE';
+  isFallback: boolean;
+  providerMessage: string;
   rawQuery: string;
   intent: ParsedIntent;
   candidates: RankedProduct[];
@@ -119,10 +121,17 @@ export async function runBuyerSession(
     });
   } catch (e) {}
 
+  const isFallback = provider === 'DETERMINISTIC_BUYER_ENGINE';
+  const providerMessage = isFallback
+    ? 'AI provider unavailable — using local commerce intelligence.'
+    : `Using ${provider} AI Intelligence Engine.`;
+
   return {
     sessionId,
     actionId,
     provider,
+    isFallback,
+    providerMessage,
     rawQuery: req.rawQuery,
     intent,
     candidates,

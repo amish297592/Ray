@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { runBuyerSession } from '@/lib/ai/buyer/buyer-agent';
 
 const BuyerSessionSchema = z.object({
-  rawQuery: z.string().min(2, 'Query is required'),
+  rawQuery: z.string().optional().transform((val) => (val && val.trim().length > 0 ? val.trim() : 'Find top recommended running setup')),
   merchantSlug: z.string().default('nova-run'),
   actionId: z.string().optional(),
   userConfirmed: z.boolean().optional().default(false),
@@ -11,7 +11,13 @@ const BuyerSessionSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      body = {};
+    }
+
     const parseResult = BuyerSessionSchema.safeParse(body);
 
     if (!parseResult.success) {
@@ -28,8 +34,9 @@ export async function POST(request: Request) {
       ...session,
     });
   } catch (error: any) {
+    console.error('AI Buyer Session API Error:', error);
     return NextResponse.json(
-      { success: false, error: 'AI Buyer Session Execution Failed', details: error?.message },
+      { success: false, error: 'AI Buyer Session Execution Failed', details: error?.message || String(error) },
       { status: 500 }
     );
   }

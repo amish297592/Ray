@@ -67,7 +67,7 @@ export default function LandingPage() {
           >
             <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-mono">
               <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-              <span>RAZORPAY AI BUILDATHON</span>
+              <span>RAY • AI REVENUE & COMMERCE OS</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
@@ -77,8 +77,8 @@ export default function LandingPage() {
               </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-gray-400 max-w-3xl mx-auto leading-relaxed">
-              RAY connects merchant revenue intelligence, AI buyer discovery, machine-readable commerce, and bounded Razorpay payments under deterministic financial guardrails.
+            <p className="text-sm sm:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed">
+              RAY connects AI-powered commerce intelligence with bounded, auditable Razorpay payments.
             </p>
 
             <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
@@ -86,7 +86,7 @@ export default function LandingPage() {
                 href="/dashboard"
                 className="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-xl shadow-blue-600/30 flex items-center space-x-2 transition-all hover:scale-105"
               >
-                <span>Explore RAY Command Center</span>
+                <span>Explore RAY</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
@@ -95,7 +95,7 @@ export default function LandingPage() {
                 className="px-6 py-3.5 rounded-xl bg-[#181b26] hover:bg-[#202433] text-gray-200 border border-[#2a3044] font-bold text-sm transition-all flex items-center space-x-2 hover:border-blue-500/40"
               >
                 <ShoppingBag className="w-4 h-4 text-blue-400" />
-                <span>Open AI Buyer Console</span>
+                <span>Try AI Buyer</span>
               </Link>
             </div>
 
