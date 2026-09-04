@@ -219,7 +219,7 @@ export default function AgentPage() {
 
                       <div className="text-left sm:text-right">
                         <div className="text-[11px] font-mono text-gray-400">MODELLED ESTIMATE IMPACT</div>
-                        <div className="text-xl font-black text-emerald-400">+₹{opp.estimatedRevenueImpact?.toLocaleString()}</div>
+                        <div className="text-xl font-black text-emerald-400">+₹{(opp.estimatedRevenueImpact || 0).toLocaleString()}</div>
                         <div className="text-[10px] text-gray-500 font-mono">(Not realized GMV)</div>
                       </div>
                     </div>

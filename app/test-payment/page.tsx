@@ -574,7 +574,7 @@ export default function TestPaymentPage() {
                 <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto glow-emerald">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h2 className="text-2xl font-black text-white">₹{paymentResult.amount.toLocaleString()} Paid</h2>
+                <h2 className="text-2xl font-black text-white">₹{(paymentResult?.amount || 0).toLocaleString()} Paid</h2>
                 <p className="text-xs text-emerald-400">Razorpay payment verified server-side via HMAC-SHA256.</p>
 
                 <button

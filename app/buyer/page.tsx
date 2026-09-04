@@ -334,7 +334,7 @@ export default function AIBuyerPage() {
               <div className="p-4 rounded-xl bg-[#12141c] border border-[#1f2433] grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
                 <div className="flex items-center space-x-2 text-emerald-400 min-w-0">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span className="truncate">1. INTENT PARSED ({session.intent.category})</span>
+                  <span className="truncate">1. INTENT PARSED ({session?.intent?.category || 'Footwear'})</span>
                 </div>
                 <div className="flex items-center space-x-2 text-emerald-400 min-w-0">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -342,11 +342,11 @@ export default function AIBuyerPage() {
                 </div>
                 <div className="flex items-center space-x-2 text-blue-400 font-bold min-w-0">
                   <Sparkles className="w-4 h-4 shrink-0" />
-                  <span className="truncate">3. OPTIMIZED ({session.basket.items.length} SELECTED)</span>
+                  <span className="truncate">3. OPTIMIZED ({(session?.basket?.items || []).length} SELECTED)</span>
                 </div>
-                <div className={`flex items-center space-x-2 font-bold min-w-0 ${session.policyDecision.allowed ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {session.policyDecision.allowed ? <ShieldCheck className="w-4 h-4 shrink-0" /> : <XCircle className="w-4 h-4 shrink-0" />}
-                  <span className="truncate">4. POLICY ({session.policyDecision.allowed ? 'PASSED' : 'BLOCKED'})</span>
+                <div className={`flex items-center space-x-2 font-bold min-w-0 ${session?.policyDecision?.allowed ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {session?.policyDecision?.allowed ? <ShieldCheck className="w-4 h-4 shrink-0" /> : <XCircle className="w-4 h-4 shrink-0" />}
+                  <span className="truncate">4. POLICY ({session?.policyDecision?.allowed ? 'PASSED' : 'BLOCKED'})</span>
                 </div>
               </div>
 
@@ -360,32 +360,32 @@ export default function AIBuyerPage() {
                       Recommended AI Basket
                     </h3>
                     <span className="text-xs font-mono text-gray-400">
-                      {session.basket.items.length} items selected from 35 catalog matches
+                      {(session?.basket?.items || []).length} items selected from 35 catalog matches
                     </span>
                   </div>
 
-                  {session.basket.items.map((item: any) => (
+                  {(session?.basket?.items || []).map((item: any) => (
                     <div
-                      key={item.id}
+                      key={item?.id || Math.random()}
                       className={`p-5 rounded-2xl bg-[#12141c] border transition-all space-y-2 ${
-                        item.isRecommendation ? 'border-blue-500/40 bg-blue-500/5' : 'border-[#1f2433]'
+                        item?.isRecommendation ? 'border-blue-500/40 bg-blue-500/5' : 'border-[#1f2433]'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1.5 min-w-0">
                           <div className="flex flex-wrap gap-2">
                             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 uppercase tracking-wider">
-                              {item.isRecommendation ? 'AI Cross-Sell Attachment' : 'Primary Intent Match'}
+                              {item?.isRecommendation ? 'AI Cross-Sell Attachment' : 'Primary Intent Match'}
                             </span>
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-gray-800 text-gray-300">
-                              {item.category}
+                              {item?.category || 'General'}
                             </span>
                           </div>
-                          <h4 className="font-bold text-white text-base pt-1">{item.title}</h4>
-                          <p className="text-xs text-gray-400 leading-relaxed">{item.rationale}</p>
+                          <h4 className="font-bold text-white text-base pt-1">{item?.title}</h4>
+                          <p className="text-xs text-gray-400 leading-relaxed">{item?.rationale}</p>
                         </div>
                         <div className="text-lg font-black text-white whitespace-nowrap shrink-0">
-                          ₹{item.price.toLocaleString()}
+                          ₹{(item?.price || 0).toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -407,32 +407,32 @@ export default function AIBuyerPage() {
                       <div className="flex justify-between items-center text-gray-400">
                         <span>Server Calculated Total:</span>
                         <span className="font-black text-blue-400 text-xl">
-                          ₹{session.basket.totalAmount.toLocaleString()}
+                          ₹{(session?.basket?.totalAmount || 0).toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-gray-400 border-t border-[#1f2433] pt-2 text-xs">
                         <span>Merchant Single Transaction Limit:</span>
                         <span className="font-bold text-white">
-                          ₹{session.policyDecision.limits.maxTransactionLimit.toLocaleString()}
+                          ₹{(session?.policyDecision?.limits?.maxTransactionLimit || 5000).toLocaleString()}
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-gray-400 border-t border-[#1f2433]/50 pt-2 text-xs">
                         <span>24-Hour Merchant Spend Cap:</span>
                         <span className="font-bold text-gray-300">
-                          ₹{session.policyDecision.limits.maxDailySpendLimit.toLocaleString()}
+                          ₹{(session?.policyDecision?.limits?.maxDailySpend || 20000).toLocaleString()}
                         </span>
                       </div>
                     </div>
 
                     {/* Prominent Policy Gate Decision Box */}
-                    {session.policyDecision.allowed && session.policyDecision.decision !== 'BLOCK' ? (
+                    {session?.policyDecision?.allowed && session?.policyDecision?.decision !== 'BLOCK' ? (
                       <div className="bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/40 space-y-2">
                         <div className="flex items-center space-x-2 text-xs font-bold text-emerald-400">
                           <ShieldCheck className="w-4 h-4" />
                           <span>POLICY CHECK: PASSED</span>
                         </div>
                         <p className="text-xs text-gray-300 leading-relaxed">
-                          Basket subtotal (₹{session.basket.totalAmount.toLocaleString()}) is within merchant single limit (₹5,000). Explicit user authorization required before payment execution.
+                          Basket subtotal (₹{(session?.basket?.totalAmount || 0).toLocaleString()}) is within merchant single limit (₹5,000). Explicit user authorization required before payment execution.
                         </p>
                         <div className="text-[11px] font-mono text-emerald-400 pt-1">
                           ✓ Amount charged: ₹0 (Awaiting authorization)
@@ -450,7 +450,7 @@ export default function AIBuyerPage() {
                         <div className="space-y-1 text-xs text-gray-300">
                           <div className="flex justify-between">
                             <span>Basket Total:</span>
-                            <span className="font-bold text-white">₹{session.basket.totalAmount.toLocaleString()}</span>
+                            <span className="font-bold text-white">₹{(session?.basket?.totalAmount || 0).toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Max Single Limit:</span>
@@ -465,7 +465,7 @@ export default function AIBuyerPage() {
                     )}
 
                     {/* Action Button */}
-                    {session.policyDecision.allowed && session.policyDecision.decision !== 'BLOCK' ? (
+                    {session?.policyDecision?.allowed && session?.policyDecision?.decision !== 'BLOCK' ? (
                       <button
                         onClick={() => setStep('AUTHORIZE')}
                         className="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2 transition-all"
@@ -505,7 +505,7 @@ export default function AIBuyerPage() {
                   </div>
                   <div className="flex justify-between py-2 border-b border-[#1f2433]/50">
                     <span className="text-gray-400">Selected Items</span>
-                    <span className="font-semibold text-gray-200">{session.basket.items.length} items</span>
+                    <span className="font-semibold text-gray-200">{(session?.basket?.items || []).length} items</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-[#1f2433]/50">
                     <span className="text-gray-400">Merchant Policy Limit</span>
@@ -514,7 +514,7 @@ export default function AIBuyerPage() {
                   <div className="flex justify-between py-2 border-b border-[#1f2433]/50">
                     <span className="text-gray-400">Server Calculated Basket Total</span>
                     <span className="font-extrabold text-blue-400 text-lg">
-                      ₹{session.basket.totalAmount.toLocaleString()}
+                      ₹{(session?.basket?.totalAmount || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -528,7 +528,7 @@ export default function AIBuyerPage() {
                   />
                   <span className="text-xs text-gray-300 leading-relaxed">
                     I explicitly authorize RAY to initiate a Razorpay Test Mode payment of{' '}
-                    <strong className="text-white">₹{session.basket.totalAmount.toLocaleString()}</strong>.
+                    <strong className="text-white">₹{(session?.basket?.totalAmount || 0).toLocaleString()}</strong>.
                   </span>
                 </label>
 
